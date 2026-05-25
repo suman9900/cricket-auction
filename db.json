@@ -1,0 +1,19 @@
+{
+  "setupComplete": false,
+  "auctioneerRegistered": false,
+  "auctioneerName": null,
+  "auctioneerCode": null,
+  "auctioneerId": null,
+  "auctioneerPassword": null,
+  "tournament": null,
+  "players": [],
+  "teams": [],
+  "auctionState": {
+    "activePlayerId": null,
+    "currentBid": 0,
+    "highestBidderId": null,
+    "status": "idle",
+    "timeLeft": 0,
+    "bidHistory": []
+  }
+}
