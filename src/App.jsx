@@ -441,6 +441,10 @@ function App() {
   useEffect(() => {
     if (authState.authenticated && authState.role === 'auctioneer' && activePortal === 'auc_login') {
       setActivePortal('auctioneer');
+      // If tournament not set up yet, take them straight to the management/setup tab
+      if (!db.setupComplete) {
+        setAuctioneerTab('management');
+      }
     }
   }, [authState.authenticated, authState.role]);
 
@@ -990,6 +994,18 @@ function App() {
                 {auctioneerTab === 'live' ? (
                   /* ── TAB 1: LIVE AUCTION DESK ── */
                   <div className="dashboard-grid single-focus-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px', maxWidth: '840px', margin: '0 auto', width: '100%' }}>
+                    {!db.setupComplete && (
+                      <div className="glass-panel" style={{ padding: '28px 32px', borderRadius: '16px', border: '1px solid rgba(251,192,45,0.3)', background: 'linear-gradient(135deg, #1a1500 0%, #1c1200 100%)', display: 'flex', alignItems: 'center', gap: '20px' }}>
+                        <span style={{ fontSize: '2.5rem', flexShrink: 0 }}>⚙️</span>
+                        <div style={{ flex: 1 }}>
+                          <h3 className="sporty-title glow-text-gold" style={{ margin: '0 0 6px 0', fontSize: '1rem' }}>TOURNAMENT NOT CONFIGURED YET</h3>
+                          <p className="text-secondary" style={{ margin: '0 0 14px 0', fontSize: '0.85rem' }}>You need to set up your tournament before the live auction desk becomes available.</p>
+                          <button className="btn-premium btn-gold btn-sm" onClick={() => setAuctioneerTab('management')}>
+                            🚀 Go to Setup Console
+                          </button>
+                        </div>
+                      </div>
+                    )}
                     <div className="flex-column gap-20">
                       
                       {/* Real-time Bidding Panel */}
