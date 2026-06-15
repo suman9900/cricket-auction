@@ -710,7 +710,7 @@ function App() {
             <div className="landing-hero">
               <div className="landing-hero-badge">
                 <span className="live-dot"></span>
-                {db.setupComplete ? `🏏 LIVE: ${db.tournament.name}` : '🏏 CRICKET AUCTION PLATFORM'}
+                {db.setupComplete && db.tournament ? `🏏 LIVE: ${db.tournament.name}` : '🏏 CRICKET AUCTION PLATFORM'}
               </div>
               <h1 className="sporty-title glow-text-gold" style={{ fontSize: '3.4rem', textShadow: '0 0 30px var(--gold-glow)', lineHeight: 1.1, marginBottom: '16px' }}>
                 STADIUM CRICKET AUCTION
@@ -1087,7 +1087,7 @@ function App() {
                                   <div className="timer-bar-container">
                                     <div 
                                       className={`timer-bar ${db.auctionState.timeLeft <= 5 ? 'bg-red' : 'bg-green'}`} 
-                                      style={{ width: `${(db.auctionState.timeLeft / db.tournament.timerSeconds) * 100}%` }}
+                                      style={{ width: `${(db.auctionState.timeLeft / (db.tournament?.timerSeconds || 30)) * 100}%` }}
                                     ></div>
                                   </div>
                                 </div>
@@ -1305,7 +1305,7 @@ function App() {
                             <input 
                               type="number" 
                               className="input-premium input-sm" 
-                              placeholder={`Budget (Default: ${formatCurrency(db.tournament.startingBudget)})`}
+                              placeholder={`Budget (Default: ${formatCurrency(db.tournament?.startingBudget || 80000000)})`}
                               value={teamForm.budget}
                               onChange={e => setTeamForm({ ...teamForm, budget: e.target.value })}
                             />
@@ -1348,7 +1348,7 @@ function App() {
                                   <div className="budget-bar-track">
                                     <div 
                                       className="budget-bar-fill bg-gold" 
-                                      style={{ width: `${(team.budget / db.tournament.startingBudget) * 100}%` }}
+                                      style={{ width: `${(team.budget / (db.tournament?.startingBudget || team.budget || 1)) * 100}%` }}
                                     ></div>
                                   </div>
                                 </div>
@@ -1712,7 +1712,7 @@ function App() {
                                       <div className="timer-bar-container">
                                         <div 
                                           className={`timer-bar ${db.auctionState.timeLeft <= 5 ? 'bg-red' : 'bg-green'}`} 
-                                          style={{ width: `${(db.auctionState.timeLeft / db.tournament.timerSeconds) * 100}%` }}
+                                          style={{ width: `${(db.auctionState.timeLeft / (db.tournament?.timerSeconds || 30)) * 100}%` }}
                                         ></div>
                                       </div>
                                     </div>
@@ -1790,10 +1790,10 @@ function App() {
                               <div className="budget-bar-track">
                                 <div 
                                   className="budget-bar-fill bg-green" 
-                                  style={{ width: `${(representingTeam.budget / db.tournament.startingBudget) * 100}%` }}
+                                  style={{ width: `${(representingTeam.budget / (db.tournament?.startingBudget || representingTeam.budget || 1)) * 100}%` }}
                                 ></div>
                               </div>
-                              <span className="text-xxs text-secondary">Initial: {formatCurrency(db.tournament.startingBudget)}</span>
+                              <span className="text-xxs text-secondary">Initial: {formatCurrency(db.tournament?.startingBudget || 0)}</span>
                             </div>
 
                             <div className="squad-details border-top">
