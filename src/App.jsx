@@ -1594,7 +1594,6 @@ function App() {
                   </div>
                 </main>
               </div>
-              </div>
             )
           ) : (
             /* NOT LOGGED IN AS AUCTIONEER: Show authentication required screen */
