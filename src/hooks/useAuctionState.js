@@ -681,7 +681,8 @@ export function useAuctionState() {
         auctioneerRegistered: true,
         auctioneerName: form.auctioneerName,
         auctioneerId: form.auctioneerId,
-        auctioneerPassword: form.auctioneerPassword
+        auctioneerPassword: form.auctioneerPassword,
+        tournamentName: form.tournamentName
       }));
     } else {
       emit('register-auctioneer', form);

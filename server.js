@@ -248,6 +248,7 @@ io.on('connection', (socket) => {
     db.auctioneerId = data.auctioneerId;
     db.auctioneerPassword = data.auctioneerPassword;
     db.auctioneerName = data.auctioneerName;
+    db.tournamentName = data.tournamentName;
     db.auctioneerRegistered = true;
     saveDb(db);
   });

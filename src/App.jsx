@@ -441,12 +441,21 @@ function App() {
   useEffect(() => {
     if (authState.authenticated && authState.role === 'auctioneer' && activePortal === 'auc_login') {
       setActivePortal('auctioneer');
-      // If tournament not set up yet, take them straight to the management/setup tab
-      if (!db.setupComplete) {
-        setAuctioneerTab('management');
-      }
     }
-  }, [authState.authenticated, authState.role]);
+  }, [authState.authenticated, authState.role, activePortal]);
+
+  // Pre-populate setup form with registered auctioneer details
+  useEffect(() => {
+    if (authState.authenticated && authState.role === 'auctioneer' && db) {
+      setSetupForm(prev => ({
+        ...prev,
+        tournamentName: db.tournamentName || db.tournament?.name || prev.tournamentName || '',
+        auctioneerName: db.auctioneerName || prev.auctioneerName || '',
+        auctioneerId: db.auctioneerId || authState.auctioneerId || prev.auctioneerId || '',
+        auctioneerPassword: db.auctioneerPassword || authState.auctioneerPassword || prev.auctioneerPassword || ''
+      }));
+    }
+  }, [authState.authenticated, authState.role, db.auctioneerRegistered, db.tournamentName, db.auctioneerName, db.auctioneerId, db.auctioneerPassword]);
 
   return (
     <div className="app-container animate-fade-in">
@@ -925,7 +934,10 @@ function App() {
                       alert('Please enter an auction name.');
                       return;
                     }
-                    registerAuctioneer(registerForm);
+                    registerAuctioneer({
+                      ...registerForm,
+                      tournamentName: setupForm.tournamentName
+                    });
                     setActivePortal('auc_login');
                   }}
                   className="auth-form flex-column gap-16"
@@ -972,8 +984,9 @@ function App() {
         {activePortal === 'auctioneer' && (
           <div>
             {authState.authenticated && authState.role === 'auctioneer' ? (
-              /* AUCTIONEER IS LOGGED IN: DISPLAY CONTROL CONSOLE */
-              <div className="auctioneer-dashboard-container flex-column gap-16" style={{ width: '100%' }}>
+              db.setupComplete ? (
+                /* AUCTIONEER IS LOGGED IN & SETUP COMPLETE: DISPLAY CONTROL CONSOLE */
+                <div className="auctioneer-dashboard-container flex-column gap-16" style={{ width: '100%' }}>
                 {/* Elegant Sub-navigation Tab Bar */}
                 <div className="auctioneer-tab-bar glass-panel flex-center gap-12" style={{ padding: '8px', borderRadius: '16px', display: 'flex', gap: '8px', width: 'fit-content', margin: '0 auto 20px auto', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.08)', boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)' }}>
                   <button 
@@ -1472,8 +1485,8 @@ function App() {
                   </div>
                 )}
               </div>
-            ) : !db.setupComplete ? (
-              /* PROGRESSIVE VIEW: RENDER SETUP CARD DIRECTLY IF NOT CONFIGURED */
+            ) : (
+              /* AUCTIONEER IS LOGGED IN & SETUP NOT COMPLETE: RENDER SETUP CARD DIRECTLY */
               <div className="setup-summary-panel glass-panel animate-fade-in" style={{ maxWidth: '900px', margin: '0 auto' }}>
                 <div className="setup-hero">
                   <h2 className="sporty-title glow-text-gold">TOURNAMENT SETUP CONSOLE</h2>
@@ -1581,16 +1594,18 @@ function App() {
                   </div>
                 </main>
               </div>
-            ) : (
-              /* SETUP NOT COMPLETE: Show setup console (auctioneer is logged in but tournament not configured yet) */
-              <div className="pending-state-card glass-panel" style={{ maxWidth: '550px', margin: '40px auto', textAlign: 'center', gap: '20px' }}>
-                <div className="icon">⚙️</div>
-                <h3 className="sporty-title glow-text-gold">TOURNAMENT NOT CONFIGURED</h3>
-                <p className="text-secondary text-sm">You are logged in as Auctioneer. Please complete the tournament setup using the Setup Console tab below.</p>
-                <button className="btn-premium btn-gold" onClick={() => setAuctioneerTab('live')}>
-                  Open Setup Console 🚀
-                </button>
               </div>
+            )
+          ) : (
+            /* NOT LOGGED IN AS AUCTIONEER: Show authentication required screen */
+            <div className="pending-state-card glass-panel" style={{ maxWidth: '550px', margin: '40px auto', textAlign: 'center', gap: '20px' }}>
+              <div className="icon">🔑</div>
+              <h3 className="sporty-title glow-text-gold">AUCTIONEER ACCESS REQUIRED</h3>
+              <p className="text-secondary text-sm">Please log in with your administrative credentials to access the console.</p>
+              <button className="btn-premium btn-gold" onClick={() => setActivePortal('auc_login')}>
+                Go to Login 🔑
+              </button>
+            </div>
             )}
           </div>
         )}
@@ -1845,15 +1860,24 @@ function App() {
               </div>
             ) : !db.setupComplete ? (
               /* PENDING SETUP WARNING */
-              <div className="pending-state-card glass-panel animate-fade-in">
+              <div className="pending-state-card glass-panel animate-fade-in" style={{ maxWidth: '550px', margin: '40px auto', textAlign: 'center', gap: '20px' }}>
                 <div className="icon">⏳</div>
                 <h3 className="sporty-title glow-text-gold">Setup Pending</h3>
-                <p>
-                  The tournament configuration is currently pending setup. Please ask the Auctioneer to configure the tournament or register an admin account to start.
+                <p className="text-secondary text-sm">
+                  {authState.authenticated && authState.role === 'auctioneer' 
+                    ? "The tournament configuration is currently pending setup. Please configure the tournament from the Admin Dashboard first."
+                    : "The tournament configuration is currently pending setup. Please ask the Auctioneer to configure the tournament or register an admin account to start."}
                 </p>
-                <button className="btn-premium btn-secondary btn-sm" onClick={() => setActivePortal('landing')}>
-                  Return to Home
-                </button>
+                <div className="flex-center gap-12" style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
+                  <button className="btn-premium btn-secondary btn-sm" onClick={() => setActivePortal('landing')}>
+                    Return to Home
+                  </button>
+                  {authState.authenticated && authState.role === 'auctioneer' && (
+                    <button className="btn-premium btn-gold btn-sm" onClick={() => setActivePortal('auctioneer')}>
+                      Admin Dashboard 🎙️
+                    </button>
+                  )}
+                </div>
               </div>
             ) : (
               /* CAPTAIN IS NOT LOGGED IN: DISPLAY CAPTAIN LOGIN GATE */
