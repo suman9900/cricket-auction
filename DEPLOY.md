@@ -1,12 +1,17 @@
-# 🌐 Option B: Complete Cloud Deployment Guide
-This guide provides step-by-step instructions to host your full-stack **Cricket Bidding Platform** globally using **Vercel** (for the lightning-fast React frontend) and **Render** (for the real-time Socket.io Node.js backend).
+# 🌐 Cricket Bidding Platform - Complete Deployment Guide
 
-This architecture ensures high performance, 100% reliable persistent WebSockets for live bidding, and is completely free to set up.
+This guide provides step-by-step instructions to host your full-stack **Cricket Bidding Platform** globally. 
+
+Because your application is a full-stack project consisting of a **React Frontend (Vite)** and a **Real-Time WebSocket Backend (Socket.io/Express)**, standard static hosts like Vercel will only render the frontend landing page, and the interactive real-time auction features will fail to connect. 
+
+To solve this, we have upgraded your project to support **two flexible hosting options**:
+1. **Option A (Highly Recommended): Unified Single-Service Deployment** (Easiest, zero-config, 100% free on **Render**)
+2. **Option B: Split-Service Cloud Deployment** (High performance, lightning-fast CDN frontend on **Vercel** + WebSocket server on **Render**)
 
 ---
 
-## 🛠️ Step 1: Push Your Code to GitHub
-We have already initialized a local Git repository and committed all your source code. You only need to create a repository on your GitHub account and push the code:
+## 🛠️ Step 1: Push Your Code to GitHub (Required for both)
+We have already initialized a local Git repository and committed all your source code. You only need to push it to your GitHub:
 
 1. Go to [github.com/new](https://github.com/new) and create a repository named `cricket-auction`.
 2. Keep it **Public** or **Private** (either works).
@@ -19,49 +24,63 @@ We have already initialized a local Git repository and committed all your source
 
 ---
 
-## ⚡ Step 2: Deploy the Backend on Render
-Render will host your active Socket.io backend and database server. It automatically installs dependencies and exposes the port.
+## 🚀 Option A: Unified Single-Service Hosting (Recommended & Easiest)
+We upgraded the Node.js server (`server.js`) to automatically compile and serve the React frontend assets in production. This allows you to host the **entire project** on Render under a single URL!
 
-1. Go to [dashboard.render.com](https://dashboard.render.com/) and log in (e.g., using GitHub).
+### How to set it up:
+1. Go to [dashboard.render.com](https://dashboard.render.com/) and log in (using GitHub).
 2. Click **New +** and select **Web Service**.
-3. Link your GitHub account and select your `cricket-auction` repository.
-4. Configure the web service with these settings:
-   - **Name**: `cricket-auction-backend`
+3. Select your `cricket-auction` repository.
+4. Configure the Web Service with the following details:
+   - **Name**: `cricket-auction`
    - **Region**: Choose the closest region (e.g., *Singapore* or *Oregon*)
    - **Branch**: `main`
+   - **Runtime**: `Node`
+   - **Build Command**: `npm install && npm run build` *(This installs dependencies and compiles the frontend)*
+   - **Start Command**: `node server.js` *(This starts the Socket server which also serves the frontend)*
+   - **Instance Type**: `Free`
+5. Click **Advanced** and add one Environment Variable:
+   - **Key**: `PORT`
+   - **Value**: `3000`
+6. Click **Create Web Service**.
+
+Once the deployment completes, Render will provide a single URL (e.g., `https://cricket-auction.onrender.com`). **Open this URL—your full platform is live with all features (real-time bidding, logins, setup) 100% working!**
+
+---
+
+## ⚡ Option B: Split-Service Cloud Deployment (Vercel + Render)
+If you prefer Vercel's ultra-fast global CDN for your frontend while running the WebSockets on Render, follow this approach.
+
+### Step 2.1: Deploy the Backend on Render
+1. Go to [dashboard.render.com](https://dashboard.render.com/) -> **New +** -> **Web Service**.
+2. Select your `cricket-auction` repository.
+3. Configure the web service with:
+   - **Name**: `cricket-auction-backend`
    - **Runtime**: `Node`
    - **Build Command**: `npm install`
    - **Start Command**: `node server.js`
    - **Instance Type**: `Free`
-5. Click **Advanced** and add the following Environment Variable:
-   - Key: `PORT`
-   - Value: `3000`
-6. Click **Create Web Service**.
+4. Click **Advanced** and add the Environment Variable:
+   - **Key**: `PORT`
+   - **Value**: `3000`
+5. Click **Create Web Service**.
+6. **Copy the public URL** Render generates (e.g., `https://cricket-auction-backend.onrender.com`).
 
-> **Note:** Once Render finishes deploying, it will give you a public URL (e.g., `https://cricket-auction-backend.onrender.com`). **Copy this URL** for the next step!
-
----
-
-## 🚀 Step 3: Deploy the Frontend on Vercel
-Vercel will build and host your premium frontend UI, serving it over a fast global CDN.
-
+### Step 2.2: Deploy the Frontend on Vercel
 1. Go to [vercel.com](https://vercel.com/) and log in using GitHub.
-2. Click **Add New** > **Project**.
-3. Import your `cricket-auction` repository.
-4. Vercel will automatically detect that this is a **Vite (React)** project and configure the build settings.
-5. Expand the **Environment Variables** section and add:
+2. Click **Add New** > **Project** and import your `cricket-auction` repository.
+3. Vercel automatically detects the **Vite (React)** workspace.
+4. Expand the **Environment Variables** section and add:
    - **Key**: `VITE_BACKEND_URL`
-   - **Value**: `https://YOUR-RENDER-BACKEND-SUBDOMAIN.onrender.com` *(Paste the Render public URL you copied in Step 2)*
-6. Click **Deploy**.
+   - **Value**: `https://YOUR-RENDER-BACKEND-SUBDOMAIN.onrender.com` *(Paste the Render URL you copied in Step 2.1)*
+5. Click **Deploy**.
+
+Open your Vercel URL (e.g., `https://cricket-auction.vercel.app`), and your frontend will securely link to your Render WebSockets backend for live bidding!
 
 ---
 
 ## 🎯 Verification Checklist
-Once both builds succeed:
-* Vercel will give you a custom production domain (e.g., `https://cricket-auction.vercel.app`).
-* Open your Vercel frontend URL. You should see the sleek Stadium Auction landing page!
-* Open the **Developer Console** (F12) to verify that the frontend connects successfully to your Render backend via WebSockets.
-* Share the Vercel link with your friends and team captains to start bidding live!
-
-> **Tip:** **Why this setup is perfect for live events:**
-> Render's free tier spins down if there is no traffic for 15 minutes. However, because our auction client opens a active socket connection, **the server will stay 100% active and responsive throughout your live event** without any idle resets!
+* Open the live site (Render or Vercel URL).
+* Try creating a tournament on the landing page (only works when backend is active).
+* Open the **Developer Console** (F12) to verify there are no Red Connection Errors and that WebSocket synchronization is active.
+* Share the live link with your tournament captains and players!

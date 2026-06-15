@@ -15,21 +15,64 @@ export function formatCurrency(amount) {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
 }
 
-export function useAuctionState() {
-  const [db, setDb] = useState({
-    setupComplete: false,
-    auctioneerCode: null,
-    tournament: null,
-    players: [],
-    teams: [],
-    auctionState: {
-      activePlayerId: null,
-      currentBid: 0,
-      highestBidderId: null,
-      status: 'idle',
-      timeLeft: 0,
-      bidHistory: []
+function generateCode(length = 6) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < length; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
+}
+
+const CLEAN_DB = {
+  setupComplete: false,
+  auctioneerRegistered: false,
+  auctioneerName: null,
+  auctioneerCode: null,
+  auctioneerId: null,
+  auctioneerPassword: null,
+  tournament: null,
+  players: [],
+  teams: [],
+  auctionState: {
+    activePlayerId: null,
+    currentBid: 0,
+    highestBidderId: null,
+    status: 'idle',
+    timeLeft: 0,
+    bidHistory: []
+  }
+};
+
+const LOCAL_STORAGE_KEY = 'cricket_auction_local_db';
+
+function getLocalDb() {
+  const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+  if (data) {
+    try {
+      return JSON.parse(data);
+    } catch (e) {
+      return null;
     }
+  }
+  return null;
+}
+
+function setLocalDb(state) {
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
+}
+
+export function useAuctionState() {
+  const [mode, setMode] = useState(() => {
+    return localStorage.getItem('cricket_auction_mode') || 'local'; // Default to local for zero-config hosted deployment!
+  });
+
+  const [db, setDb] = useState(() => {
+    const currentMode = localStorage.getItem('cricket_auction_mode') || 'local';
+    if (currentMode === 'local') {
+      return getLocalDb() || CLEAN_DB;
+    }
+    return CLEAN_DB;
   });
 
   const [connected, setConnected] = useState(false);
@@ -37,7 +80,6 @@ export function useAuctionState() {
   const [authError, setAuthError] = useState(null);
   const [registeredPlayerId, setRegisteredPlayerId] = useState(null);
 
-  // Auth state: { authenticated, role, teamId, teamName, auctioneerCode, auctioneerId, auctioneerPassword }
   const [authState, setAuthState] = useState({
     authenticated: false,
     role: null,
@@ -49,18 +91,82 @@ export function useAuctionState() {
   });
 
   const socketRef = useRef(null);
+  const timerRef = useRef(null);
 
+  // Sync mode changes to localStorage
+  const changeMode = (newMode) => {
+    setMode(newMode);
+    localStorage.setItem('cricket_auction_mode', newMode);
+    if (newMode === 'local') {
+      const localData = getLocalDb() || CLEAN_DB;
+      setLocalDb(localData);
+      setDb(localData);
+      setAuthState({
+        authenticated: false,
+        role: null,
+        teamId: null,
+        teamName: null,
+        auctioneerCode: null,
+        auctioneerId: null,
+        auctioneerPassword: null
+      });
+    } else {
+      setDb(CLEAN_DB);
+    }
+  };
+
+  // Local helper to update and persist local state
+  const updateLocalDb = (updater) => {
+    setDb(prevDb => {
+      const nextDb = typeof updater === 'function' ? updater(prevDb) : updater;
+      setLocalDb(nextDb);
+      window.dispatchEvent(new CustomEvent('local-db-updated'));
+      return nextDb;
+    });
+  };
+
+  // Sync state across browser tabs in local mode
   useEffect(() => {
+    if (mode !== 'local') return;
+
+    const handleStorageSync = () => {
+      const localData = getLocalDb();
+      if (localData) {
+        setDb(localData);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageSync);
+    window.addEventListener('local-db-updated', handleStorageSync);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageSync);
+      window.removeEventListener('local-db-updated', handleStorageSync);
+    };
+  }, [mode]);
+
+  // Online socket setup
+  useEffect(() => {
+    if (mode !== 'online') {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      return;
+    }
+
     const protocol = window.location.protocol;
     const hostname = window.location.hostname;
-    const socketUrl = import.meta.env.VITE_BACKEND_URL || `${protocol}//${hostname}:3000`;
+    const socketUrl = import.meta.env.VITE_BACKEND_URL || 
+      (hostname === 'localhost' || hostname === '127.0.0.1' 
+        ? `${protocol}//${hostname}:3000` 
+        : window.location.origin);
 
     const socket = io(socketUrl, { reconnectionAttempts: 10, reconnectionDelay: 2000 });
     socketRef.current = socket;
 
     socket.on('connect', () => setConnected(true));
     socket.on('disconnect', () => setConnected(false));
-
     socket.on('init-state', (serverDb) => setDb(serverDb));
     socket.on('state-updated', (serverDb) => setDb(serverDb));
 
@@ -93,60 +199,556 @@ export function useAuctionState() {
 
     socket.on('player-register-success', (playerId) => setRegisteredPlayerId(playerId));
 
-    return () => { if (socket) socket.disconnect(); };
-  }, []);
+    return () => {
+      if (socket) socket.disconnect();
+    };
+  }, [mode]);
 
-  const emit = (event, data) => { if (socketRef.current) socketRef.current.emit(event, data); };
+  // Local Mode auto-resolve for countdown timer
+  const localExecuteAutoResolve = (currentDb) => {
+    const { activePlayerId, currentBid, highestBidderId } = currentDb.auctionState;
+    if (!activePlayerId) return currentDb;
 
-  // ── Auth actions ──
-  const loginAsAuctioneer = (code) => emit('auth-auctioneer', code);
-  const loginAsTeam = (loginId, loginPassword) => emit('auth-team', { loginId, loginPassword });
+    if (highestBidderId) {
+      const winnerTeam = currentDb.teams.find(t => t.id === highestBidderId);
+      const soldPlayer = currentDb.players.find(p => p.id === activePlayerId);
+      if (!winnerTeam || !soldPlayer) return currentDb;
+
+      return {
+        ...currentDb,
+        players: currentDb.players.map(p =>
+          p.id === activePlayerId ? { ...p, status: 'sold', soldPrice: currentBid, soldToTeamId: highestBidderId } : p
+        ),
+        teams: currentDb.teams.map(t =>
+          t.id === highestBidderId ? { ...t, budget: t.budget - currentBid, players: [...t.players, activePlayerId] } : t
+        ),
+        auctionState: {
+          ...currentDb.auctionState,
+          status: 'sold',
+          timeLeft: 0
+        }
+      };
+    } else {
+      return {
+        ...currentDb,
+        players: currentDb.players.map(p =>
+          p.id === activePlayerId ? { ...p, status: 'unsold' } : p
+        ),
+        auctionState: {
+          ...currentDb.auctionState,
+          status: 'unsold',
+          timeLeft: 0
+        }
+      };
+    }
+  };
+
+  // Local Mode timer execution
+  useEffect(() => {
+    if (mode !== 'local') return;
+
+    if (db.auctionState.status === 'bidding' && db.auctionState.timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        updateLocalDb(prev => {
+          if (prev.auctionState.status !== 'bidding' || prev.auctionState.timeLeft <= 0) {
+            clearInterval(timerRef.current);
+            return prev;
+          }
+          const nextTime = prev.auctionState.timeLeft - 1;
+          if (nextTime === 0) {
+            clearInterval(timerRef.current);
+            return localExecuteAutoResolve(prev);
+          } else {
+            return {
+              ...prev,
+              auctionState: {
+                ...prev.auctionState,
+                timeLeft: nextTime
+              }
+            };
+          }
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [mode, db.auctionState.status, db.auctionState.timeLeft]);
+
+  const emit = (event, data) => {
+    if (socketRef.current) socketRef.current.emit(event, data);
+  };
+
+  // ── Wrapped Action Functions ──
+
+  const loginAsAuctioneer = (code) => {
+    if (mode === 'local') {
+      const currentDb = getLocalDb() || db;
+      if (!currentDb.setupComplete) {
+        setAuthError('No tournament created yet.');
+        return;
+      }
+      if (typeof code === 'object' && code !== null) {
+        const { loginId, loginPassword } = code;
+        if (loginId === currentDb.auctioneerId && loginPassword === currentDb.auctioneerPassword) {
+          setAuthState({
+            authenticated: true,
+            role: 'auctioneer',
+            teamId: null,
+            teamName: null,
+            auctioneerCode: currentDb.auctioneerCode,
+            auctioneerId: currentDb.auctioneerId,
+            auctioneerPassword: currentDb.auctioneerPassword
+          });
+          return;
+        }
+        if (currentDb.auctioneerCode && loginId === 'admin' && loginPassword === currentDb.auctioneerCode) {
+          setAuthState({
+            authenticated: true,
+            role: 'auctioneer',
+            teamId: null,
+            teamName: null,
+            auctioneerCode: currentDb.auctioneerCode,
+            auctioneerId: currentDb.auctioneerId,
+            auctioneerPassword: currentDb.auctioneerPassword
+          });
+          return;
+        }
+      } else if (code === currentDb.auctioneerCode) {
+        setAuthState({
+          authenticated: true,
+          role: 'auctioneer',
+          teamId: null,
+          teamName: null,
+          auctioneerCode: currentDb.auctioneerCode,
+          auctioneerId: currentDb.auctioneerId,
+          auctioneerPassword: currentDb.auctioneerPassword
+        });
+        return;
+      }
+      setAuthError('Invalid Auctioneer ID or Password.');
+    } else {
+      emit('auth-auctioneer', code);
+    }
+  };
+
+  const loginAsTeam = (loginId, loginPassword) => {
+    if (mode === 'local') {
+      const currentDb = getLocalDb() || db;
+      if (!currentDb.setupComplete) {
+        setAuthError('No tournament created yet.');
+        return;
+      }
+      const team = currentDb.teams.find(t => t.loginId === loginId && t.loginPassword === loginPassword);
+      if (!team) {
+        setAuthError('Invalid Team ID or Password.');
+        return;
+      }
+      setAuthState({
+        authenticated: true,
+        role: 'team',
+        teamId: team.id,
+        teamName: team.name,
+        auctioneerCode: null,
+        auctioneerId: null,
+        auctioneerPassword: null
+      });
+    } else {
+      emit('auth-team', { loginId, loginPassword });
+    }
+  };
+
   const logout = () => {
-    emit('logout');
-    setAuthState({ authenticated: false, role: null, teamId: null, teamName: null, auctioneerCode: null, auctioneerId: null, auctioneerPassword: null });
+    if (mode === 'local') {
+      setAuthState({ authenticated: false, role: null, teamId: null, teamName: null, auctioneerCode: null, auctioneerId: null, auctioneerPassword: null });
+    } else {
+      emit('logout');
+      setAuthState({ authenticated: false, role: null, teamId: null, teamName: null, auctioneerCode: null, auctioneerId: null, auctioneerPassword: null });
+    }
   };
 
-  // ── Auctioneer actions ──
-  const setupTournament = (form) => emit('setup-tournament', form);
-  const addTeam = (form) => emit('add-team', form);
-  const deleteTeam = (teamId) => emit('delete-team', teamId);
-  const allocatePriceAndApprove = (playerId, basePrice) => emit('approve-player', { playerId, basePrice });
-  const rejectPlayer = (playerId) => emit('reject-player', playerId);
-  const startAuctionForPlayer = (playerId) => emit('start-auction-player', playerId);
-  const handleDeclareSold = () => emit('declare-sold');
-  const handleDeclareUnsold = () => emit('declare-unsold');
-  const toggleBiddingTimer = () => emit('toggle-timer');
-  const resetDatabase = () => emit('reset-db');
+  const setupTournament = (form) => {
+    if (mode === 'local') {
+      const auctioneerCode = 'AUC-' + generateCode(6);
+      const auctioneerId = form.auctioneerId || 'admin';
+      const auctioneerPassword = form.auctioneerPassword || generateCode(6);
+      
+      const teams = (form.teams || []).map(t => {
+        const loginId = t.loginId || ('T-' + generateCode(4));
+        const loginPassword = t.loginPassword || generateCode(6);
+        const budget = Number(t.budget) || Number(form.startingBudget) || 80000000;
+        return {
+          id: 'team-' + Math.random().toString(36).substr(2, 9),
+          name: t.name,
+          captain: t.captain,
+          budget,
+          players: [],
+          loginId,
+          loginPassword
+        };
+      });
 
-  // ── Team action (no teamId param — server reads it from socket auth) ──
-  const placeBid = () => {
-    emit('place-bid');
-    return { success: true };
+      const newDb = {
+        setupComplete: true,
+        auctioneerRegistered: true,
+        auctioneerName: form.auctioneerName || 'Master Auctioneer',
+        auctioneerCode,
+        auctioneerId,
+        auctioneerPassword,
+        tournament: {
+          name: form.tournamentName,
+          auctioneer: form.auctioneerName || 'Master Auctioneer',
+          gender: form.gender || 'Men',
+          startingBudget: Number(form.startingBudget) || 80000000,
+          minBidIncrement: Number(form.minBidIncrement) || 1000000,
+          timerSeconds: Number(form.timerSeconds) || 30
+        },
+        teams,
+        players: [],
+        auctionState: { activePlayerId: null, currentBid: 0, highestBidderId: null, status: 'idle', timeLeft: 0, bidHistory: [] }
+      };
+
+      updateLocalDb(newDb);
+      setAuthState({
+        authenticated: true,
+        role: 'auctioneer',
+        teamId: null,
+        teamName: null,
+        auctioneerCode,
+        auctioneerId,
+        auctioneerPassword
+      });
+    } else {
+      emit('setup-tournament', form);
+    }
   };
 
-  // ── Player action ──
+  const addTeam = (form) => {
+    if (mode === 'local') {
+      updateLocalDb(prev => {
+        const loginId = 'T-' + generateCode(4);
+        const loginPassword = generateCode(6);
+        const budget = Number(form.budget) || (prev.tournament ? prev.tournament.startingBudget : 50000000);
+        const newTeam = {
+          id: 'team-' + Math.random().toString(36).substr(2, 9),
+          name: form.name,
+          captain: form.captain,
+          budget,
+          players: [],
+          loginId,
+          loginPassword
+        };
+        return {
+          ...prev,
+          teams: [...prev.teams, newTeam]
+        };
+      });
+    } else {
+      emit('add-team', form);
+    }
+  };
+
+  const deleteTeam = (teamId) => {
+    if (mode === 'local') {
+      updateLocalDb(prev => ({
+        ...prev,
+        teams: prev.teams.filter(t => t.id !== teamId)
+      }));
+    } else {
+      emit('delete-team', teamId);
+    }
+  };
+
+  const allocatePriceAndApprove = (playerId, basePrice) => {
+    if (mode === 'local') {
+      updateLocalDb(prev => ({
+        ...prev,
+        players: prev.players.map(p =>
+          p.id === playerId ? { ...p, basePrice: Number(basePrice), status: 'approved' } : p
+        )
+      }));
+    } else {
+      emit('approve-player', { playerId, basePrice });
+    }
+  };
+
+  const rejectPlayer = (playerId) => {
+    if (mode === 'local') {
+      updateLocalDb(prev => ({
+        ...prev,
+        players: prev.players.filter(p => p.id !== playerId)
+      }));
+    } else {
+      emit('reject-player', playerId);
+    }
+  };
+
+  const startAuctionForPlayer = (playerId) => {
+    if (mode === 'local') {
+      updateLocalDb(prev => {
+        const player = prev.players.find(p => p.id === playerId);
+        if (!player) return prev;
+        
+        const updatedPlayers = prev.players.map(p => {
+          if (p.id === playerId) return { ...p, status: 'active' };
+          if (p.status === 'active') return { ...p, status: 'approved' };
+          return p;
+        });
+
+        return {
+          ...prev,
+          players: updatedPlayers,
+          auctionState: {
+            activePlayerId: playerId,
+            currentBid: player.basePrice || 0,
+            highestBidderId: null,
+            status: 'bidding',
+            timeLeft: prev.tournament ? prev.tournament.timerSeconds : 30,
+            bidHistory: []
+          }
+        };
+      });
+    } else {
+      emit('start-auction-player', playerId);
+    }
+  };
+
+  const placeBid = (forcedTeamId = null) => {
+    if (mode === 'local') {
+      const teamId = forcedTeamId || authState.teamId;
+      if (!teamId) {
+        setBidError('Authentication required to bid.');
+        return { success: false };
+      }
+
+      let success = false;
+      updateLocalDb(prev => {
+        const { activePlayerId, currentBid, highestBidderId, status } = prev.auctionState;
+        if (status !== 'bidding') return prev;
+
+        const player = prev.players.find(p => p.id === activePlayerId);
+        const team = prev.teams.find(t => t.id === teamId);
+        if (!player || !team) return prev;
+
+        const increment = prev.tournament ? prev.tournament.minBidIncrement : 1000000;
+        const nextBid = highestBidderId ? (currentBid + increment) : currentBid;
+
+        if (team.budget < nextBid) {
+          setTimeout(() => setBidError('Insufficient budget!'), 10);
+          return prev;
+        }
+        if (highestBidderId === teamId) {
+          setTimeout(() => setBidError('You already hold the highest bid!'), 10);
+          return prev;
+        }
+
+        success = true;
+        const updatedBidHistory = [
+          {
+            teamId,
+            teamName: team.name,
+            captain: team.captain,
+            bidAmount: nextBid,
+            timestamp: Date.now()
+          },
+          ...prev.auctionState.bidHistory
+        ];
+
+        return {
+          ...prev,
+          auctionState: {
+            ...prev.auctionState,
+            currentBid: nextBid,
+            highestBidderId: teamId,
+            timeLeft: prev.tournament ? prev.tournament.timerSeconds : 30,
+            bidHistory: updatedBidHistory
+          }
+        };
+      });
+
+      return { success };
+    } else {
+      emit('place-bid');
+      return { success: true };
+    }
+  };
+
+  const handleDeclareSold = () => {
+    if (mode === 'local') {
+      updateLocalDb(prev => localExecuteAutoResolve(prev));
+    } else {
+      emit('declare-sold');
+    }
+  };
+
+  const handleDeclareUnsold = () => {
+    if (mode === 'local') {
+      updateLocalDb(prev => {
+        const { activePlayerId } = prev.auctionState;
+        if (!activePlayerId) return prev;
+        return {
+          ...prev,
+          players: prev.players.map(p =>
+            p.id === activePlayerId ? { ...p, status: 'unsold' } : p
+          ),
+          auctionState: {
+            ...prev.auctionState,
+            status: 'unsold',
+            timeLeft: 0
+          }
+        };
+      });
+    } else {
+      emit('declare-unsold');
+    }
+  };
+
+  const toggleBiddingTimer = () => {
+    if (mode === 'local') {
+      updateLocalDb(prev => {
+        const currentStatus = prev.auctionState.status;
+        if (currentStatus === 'bidding') {
+          return {
+            ...prev,
+            auctionState: { ...prev.auctionState, status: 'paused' }
+          };
+        } else if (currentStatus === 'paused') {
+          return {
+            ...prev,
+            auctionState: { ...prev.auctionState, status: 'bidding' }
+          };
+        }
+        return prev;
+      });
+    } else {
+      emit('toggle-timer');
+    }
+  };
+
   const registerPlayer = (form) => {
-    setRegisteredPlayerId(null);
-    emit('register-player', form);
+    if (mode === 'local') {
+      const newPlayerId = 'play-' + Math.random().toString(36).substr(2, 9);
+      updateLocalDb(prev => {
+        const newPlayer = {
+          id: newPlayerId,
+          name: form.name,
+          avatarUrl: form.avatarUrl || '',
+          avatarPreset: form.avatarPreset || 'av-1',
+          role: form.role,
+          battingStyle: form.battingStyle,
+          bowlingStyle: form.bowlingStyle,
+          basePrice: 0,
+          status: 'pending',
+          soldPrice: 0,
+          soldToTeamId: null
+        };
+        return {
+          ...prev,
+          players: [...prev.players, newPlayer]
+        };
+      });
+      setRegisteredPlayerId(newPlayerId);
+    } else {
+      setRegisteredPlayerId(null);
+      emit('register-player', form);
+    }
+  };
+
+  const resetDatabase = () => {
+    if (mode === 'local') {
+      updateLocalDb(CLEAN_DB);
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      logout();
+    } else {
+      emit('reset-db');
+    }
   };
 
   const registerAuctioneer = (form) => {
-    emit('register-auctioneer', form);
+    if (mode === 'local') {
+      updateLocalDb(prev => ({
+        ...prev,
+        auctioneerRegistered: true,
+        auctioneerName: form.auctioneerName,
+        auctioneerId: form.auctioneerId,
+        auctioneerPassword: form.auctioneerPassword
+      }));
+    } else {
+      emit('register-auctioneer', form);
+    }
   };
 
   const togglePlaying11 = (playerId) => {
-    emit('toggle-playing11', { playerId });
+    if (mode === 'local') {
+      let errorMsg = null;
+      updateLocalDb(prev => {
+        const player = prev.players.find(p => p.id === playerId);
+        if (!player) return prev;
+
+        if (player.status !== 'sold') {
+          errorMsg = 'Only sold players can be selected for the Playing XI.';
+          return prev;
+        }
+
+        const squadTeamId = player.soldToTeamId;
+        const currentPlaying11Count = prev.players.filter(p => p.soldToTeamId === squadTeamId && p.isPlaying11).length;
+
+        if (!player.isPlaying11 && currentPlaying11Count >= 11) {
+          errorMsg = 'Roster Limit Exceeded! A playing XI can have at most 11 players.';
+          return prev;
+        }
+
+        return {
+          ...prev,
+          players: prev.players.map(p =>
+            p.id === playerId ? { ...p, isPlaying11: !p.isPlaying11 } : p
+          )
+        };
+      });
+      if (errorMsg) {
+        setBidError(errorMsg);
+        setTimeout(() => setBidError(null), 3000);
+      }
+    } else {
+      emit('toggle-playing11', { playerId });
+    }
   };
 
   return {
-    db, connected, bidError, authError,
-    authState, registeredPlayerId, setRegisteredPlayerId,
-    loginAsAuctioneer, loginAsTeam, logout,
-    setupTournament, addTeam, deleteTeam,
-    allocatePriceAndApprove, rejectPlayer,
-    startAuctionForPlayer, placeBid,
-    handleDeclareSold, handleDeclareUnsold,
-    toggleBiddingTimer, registerPlayer, resetDatabase,
-    registerAuctioneer, togglePlaying11
+    db, 
+    connected: mode === 'local' ? true : connected, 
+    bidError, 
+    authError,
+    authState, 
+    registeredPlayerId, 
+    setRegisteredPlayerId,
+    loginAsAuctioneer, 
+    loginAsTeam, 
+    logout,
+    setupTournament, 
+    addTeam, 
+    deleteTeam,
+    allocatePriceAndApprove, 
+    rejectPlayer,
+    startAuctionForPlayer, 
+    placeBid,
+    handleDeclareSold, 
+    handleDeclareUnsold,
+    toggleBiddingTimer, 
+    registerPlayer, 
+    resetDatabase,
+    registerAuctioneer, 
+    togglePlaying11,
+    mode, 
+    changeMode
   };
 }

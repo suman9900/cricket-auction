@@ -476,6 +476,18 @@ io.on('connection', (socket) => {
   });
 });
 
+// Serve static files from the React app dist folder if it exists
+const distPath = path.join(__dirname, 'dist');
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+  app.get('*all', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+  console.log('Serving production build from static files.');
+} else {
+  console.log('Static dist directory not found. Server running in API-only mode.');
+}
+
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
   console.log(`Socket.io server running on port ${PORT}`);
