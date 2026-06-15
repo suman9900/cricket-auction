@@ -912,142 +912,47 @@ function App() {
                 </button>
               </div>
             ) : (
-              <div className="setup-summary-panel glass-panel animate-fade-in" style={{ maxWidth: '900px', margin: '32px auto 0 auto' }}>
+              <div className="auth-card glass-panel flex-column" style={{ maxWidth: '480px', margin: '32px auto 0 auto', padding: '36px', borderRadius: '24px', border: '1px solid rgba(255,215,0,0.15)' }}>
+                <h2 className="sporty-title text-gold text-center" style={{ fontSize: '1.3rem', marginBottom: '24px' }}>CREATE ADMIN PROFILE</h2>
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
                     if (!registerForm.auctioneerName.trim() || !registerForm.auctioneerId.trim() || !registerForm.auctioneerPassword.trim()) {
-                      alert('Please fill in all admin profile details.');
+                      alert('Please fill in all details.');
                       return;
                     }
                     if (!setupForm.tournamentName.trim()) {
-                      alert('Please enter a tournament name.');
+                      alert('Please enter an auction name.');
                       return;
                     }
-                    if (setupTeams.length === 0) {
-                      alert('Please add at least one team before launching.');
-                      return;
-                    }
-                    // Combined: register auctioneer + setup tournament in one shot
-                    setupTournament({
-                      ...setupForm,
-                      auctioneerName: registerForm.auctioneerName,
-                      auctioneerId: registerForm.auctioneerId,
-                      auctioneerPassword: registerForm.auctioneerPassword,
-                      teams: setupTeams
-                    });
-                    setActivePortal('auctioneer');
-                    setAuctioneerTab('live');
+                    registerAuctioneer(registerForm);
+                    setActivePortal('auc_login');
                   }}
+                  className="auth-form flex-column gap-16"
                 >
-                  <div className="setup-hero" style={{ marginBottom: '8px' }}>
-                    <h2 className="sporty-title glow-text-gold">COMPLETE SETUP IN ONE STEP</h2>
-                    <p className="text-secondary" style={{ fontSize: '0.85rem' }}>Fill in your admin credentials and tournament details below, then launch.</p>
+                  <div className="form-group text-left">
+                    <label className="text-xs">Your Full Name</label>
+                    <input type="text" className="input-premium" placeholder="e.g. Suman Sahoo" value={registerForm.auctioneerName} onChange={e => setRegisterForm({...registerForm, auctioneerName: e.target.value})} required autoFocus />
                   </div>
-
-                  <main className="registration-grid" style={{ gap: '20px', padding: '10px' }}>
-                    {/* LEFT COLUMN */}
-                    <div className="flex-column gap-20">
-
-                      {/* Admin Profile */}
-                      <div className="form-section-card" style={{ borderLeft: '3px solid var(--gold-accent)' }}>
-                        <h3 className="sporty-title text-gold" style={{ fontSize: '1rem', marginBottom: '14px' }}>🔑 ADMIN PROFILE</h3>
-                        <div className="flex-column gap-12">
-                          <div className="form-group">
-                            <label className="text-xs">Your Full Name</label>
-                            <input type="text" className="input-premium" placeholder="e.g. Suman Sahoo" value={registerForm.auctioneerName} onChange={e => setRegisterForm({...registerForm, auctioneerName: e.target.value})} required autoFocus />
-                          </div>
-                          <div className="form-group">
-                            <label className="text-xs">Admin Login ID</label>
-                            <input type="text" className="input-premium" placeholder="e.g. admin" value={registerForm.auctioneerId} onChange={e => setRegisterForm({...registerForm, auctioneerId: e.target.value})} required />
-                          </div>
-                          <div className="form-group">
-                            <label className="text-xs">Password</label>
-                            <input type="password" className="input-premium" placeholder="Set a secure password" value={registerForm.auctioneerPassword} onChange={e => setRegisterForm({...registerForm, auctioneerPassword: e.target.value})} required />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Tournament Settings */}
-                      <div className="form-section-card">
-                        <h3 className="sporty-title text-gold" style={{ fontSize: '1rem', marginBottom: '14px' }}>🏆 TOURNAMENT SETTINGS</h3>
-                        <div className="setup-form-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                          <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                            <label className="text-xs">Tournament Name</label>
-                            <input type="text" className="input-premium" placeholder="e.g. IPL Auction 2025" value={setupForm.tournamentName} onChange={e => setSetupForm({...setupForm, tournamentName: e.target.value})} required />
-                          </div>
-                          <div className="form-group">
-                            <label className="text-xs">Gender</label>
-                            <select className="input-premium" value={setupForm.gender} onChange={e => setSetupForm({...setupForm, gender: e.target.value})}>
-                              <option value="Men">Men's</option>
-                              <option value="Women">Women's</option>
-                              <option value="Mixed">Mixed</option>
-                            </select>
-                          </div>
-                          <div className="form-group">
-                            <label className="text-xs">Budget per Team (₹)</label>
-                            <input type="number" className="input-premium" value={setupForm.startingBudget} onChange={e => { const v = Number(e.target.value); setSetupForm({...setupForm, startingBudget: v}); setSetupTeams(setupTeams.map(t => ({...t, budget: v}))); }} required />
-                          </div>
-                          <div className="form-group">
-                            <label className="text-xs">Bid Increment (₹)</label>
-                            <input type="number" className="input-premium" value={setupForm.minBidIncrement} onChange={e => setSetupForm({...setupForm, minBidIncrement: Number(e.target.value)})} required />
-                          </div>
-                          <div className="form-group">
-                            <label className="text-xs">Timer (seconds)</label>
-                            <input type="number" className="input-premium" value={setupForm.timerSeconds} onChange={e => setSetupForm({...setupForm, timerSeconds: Number(e.target.value)})} required />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* RIGHT COLUMN — Teams */}
-                    <div className="flex-column gap-20">
-                      <div className="form-section-card">
-                        <h3 className="sporty-title text-gold" style={{ fontSize: '1rem', marginBottom: '10px' }}>🏏 ADD TEAMS</h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '12px', marginBottom: '14px' }}>
-                          <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                            <input type="text" className="input-premium input-sm" placeholder="Franchise / Team Name" value={tempTeam.name} onChange={e => setTempTeam({...tempTeam, name: e.target.value})} />
-                          </div>
-                          <div className="form-group">
-                            <input type="text" className="input-premium input-sm" placeholder="Captain Name" value={tempTeam.captain} onChange={e => setTempTeam({...tempTeam, captain: e.target.value})} />
-                          </div>
-                          <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
-                            <button type="button" className="btn-premium btn-secondary btn-sm width-full" onClick={addTeamToSetup}>+ Add Team</button>
-                          </div>
-                        </div>
-
-                        <h4 className="sporty-title text-xs text-secondary" style={{ marginBottom: '8px' }}>REGISTERED TEAMS ({setupTeams.length})</h4>
-                        {setupTeams.length === 0 ? (
-                          <div className="text-center text-muted text-xs italic" style={{ padding: '20px', border: '1px dashed rgba(255,255,255,0.07)', borderRadius: '8px' }}>
-                            No teams added yet. Add at least one above.
-                          </div>
-                        ) : (
-                          <div className="squads-setup-list" style={{ maxHeight: '260px', overflowY: 'auto' }}>
-                            {setupTeams.map((team, idx) => (
-                              <div key={idx} className="setup-team-row" style={{ padding: '8px 12px', marginBottom: '6px' }}>
-                                <div className="setup-team-info">
-                                  <h4 style={{ fontSize: '0.85rem', margin: 0 }}>{team.name} <span className="text-secondary" style={{ fontWeight: 400 }}>— {team.captain}</span></h4>
-                                  <div className="setup-cred-badge-inline" style={{ marginTop: '4px' }}>
-                                    <div className="setup-cred-badge" style={{ fontSize: '0.6rem', padding: '2px 4px' }}>ID: {team.loginId}</div>
-                                    <div className="setup-cred-badge" style={{ fontSize: '0.6rem', padding: '2px 4px' }}>PASS: {team.loginPassword}</div>
-                                  </div>
-                                </div>
-                                <button type="button" className="btn-remove-setup-team text-red" onClick={() => removeTeamFromSetup(idx)}>❌</button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      <button type="submit" className="btn-premium btn-gold btn-large font-bold" style={{ padding: '16px', textTransform: 'uppercase', letterSpacing: '1px', boxShadow: '0 0 20px var(--gold-glow)', fontSize: '1rem' }}>
-                        🚀 Register & Launch Auction
-                      </button>
-                    </div>
-                  </main>
+                  <div className="form-group text-left">
+                    <label className="text-xs">Admin Login ID</label>
+                    <input type="text" className="input-premium" placeholder="e.g. admin" value={registerForm.auctioneerId} onChange={e => setRegisterForm({...registerForm, auctioneerId: e.target.value})} required />
+                  </div>
+                  <div className="form-group text-left">
+                    <label className="text-xs">Password</label>
+                    <input type="password" className="input-premium" placeholder="Set a secure password" value={registerForm.auctioneerPassword} onChange={e => setRegisterForm({...registerForm, auctioneerPassword: e.target.value})} required />
+                  </div>
+                  <div className="form-group text-left">
+                    <label className="text-xs">Auction Name</label>
+                    <input type="text" className="input-premium" placeholder="e.g. IPL Auction 2025" value={setupForm.tournamentName} onChange={e => setSetupForm({...setupForm, tournamentName: e.target.value})} required />
+                  </div>
+                  <button type="submit" className="btn-premium btn-gold" style={{ padding: '14px', fontSize: '1rem', marginTop: '8px', letterSpacing: '0.5px' }}>
+                    Register & Continue 🏆
+                  </button>
                 </form>
 
                 <div className="or-divider" style={{ margin: '20px 0' }}><span>or</span></div>
-                <p className="text-center text-secondary text-xs" style={{ marginBottom: '16px' }}>
+                <p className="text-center text-secondary text-xs">
                   Already registered?{' '}
                   <span className="text-gold font-bold" style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setActivePortal('auc_login')}>
                     Login as Auctioneer
