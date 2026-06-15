@@ -728,6 +728,7 @@ export function useAuctionState() {
     connected: mode === 'local' ? true : connected, 
     bidError, 
     authError,
+    clearAuthError: () => setAuthError(null),
     authState, 
     registeredPlayerId, 
     setRegisteredPlayerId,

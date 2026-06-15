@@ -239,6 +239,7 @@ function App() {
     connected,
     bidError,
     authError,
+    clearAuthError,
     authState,
     registeredPlayerId,
     setRegisteredPlayerId,
@@ -658,17 +659,37 @@ function App() {
         </div>
       </header>
 
-      {/* Global Toast error banner & feedback */}
+      {/* ── Auth Error Modal ── */}
       {authError && (
-        <div className="toast-error-banner animate-pulse-red" style={{ top: '80px', zIndex: '1000' }}>
-          ⚠️ {authError}
+        <div className="auth-error-overlay" onClick={clearAuthError}>
+          <div className="auth-error-modal" onClick={e => e.stopPropagation()}>
+            <div className="auth-error-icon-wrap">
+              <span className="auth-error-icon">🔐</span>
+            </div>
+            <div className="auth-error-body">
+              <h4 className="auth-error-title">Authentication Failed</h4>
+              <p className="auth-error-msg">{authError}</p>
+            </div>
+            <button className="auth-error-close" onClick={clearAuthError} aria-label="Dismiss">
+              ✕
+            </button>
+          </div>
         </div>
       )}
       {bidError && (
-        <div className="toast-error-banner animate-pulse-red" style={{ top: '80px', zIndex: '1000' }}>
-          ⚠️ {bidError}
+        <div className="auth-error-overlay" onClick={() => {}} style={{ pointerEvents: 'none' }}>
+          <div className="auth-error-modal bid-error-modal" style={{ pointerEvents: 'all' }}>
+            <div className="auth-error-icon-wrap" style={{ background: 'rgba(217,4,41,0.15)', borderColor: 'rgba(217,4,41,0.4)' }}>
+              <span className="auth-error-icon">⚡</span>
+            </div>
+            <div className="auth-error-body">
+              <h4 className="auth-error-title">Bid Error</h4>
+              <p className="auth-error-msg">{bidError}</p>
+            </div>
+          </div>
         </div>
       )}
+
       {copyFeedback && (
         <div className="copy-feedback-banner animate-pulse-glow" style={{ top: '80px' }}>
           <span>{copyFeedback}</span>
@@ -825,7 +846,7 @@ function App() {
                         className="input-premium"
                         placeholder="e.g. admin"
                         value={aucIdInput}
-                        onChange={(e) => setAucIdInput(e.target.value)}
+                        onChange={(e) => { setAucIdInput(e.target.value); clearAuthError(); }}
                         required
                         autoFocus
                       />
@@ -837,7 +858,7 @@ function App() {
                         className="input-premium"
                         placeholder="••••••"
                         value={aucPasswordInput}
-                        onChange={(e) => setAucPasswordInput(e.target.value)}
+                        onChange={(e) => { setAucPasswordInput(e.target.value); clearAuthError(); }}
                         required
                       />
                     </div>
