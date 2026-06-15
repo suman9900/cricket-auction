@@ -181,11 +181,13 @@ io.on('connection', (socket) => {
 
   // ── AUTH: Auctioneer login ──
   socket.on('auth-auctioneer', (authData) => {
-    if (!db.setupComplete) {
-      socket.emit('auth-error', 'No tournament created yet.');
+    // Auctioneer can always log in — even before tournament is configured
+    // They need access to set up the tournament first
+    if (!db.auctioneerRegistered) {
+      socket.emit('auth-error', 'No auctioneer registered yet. Please register first.');
       return;
     }
-    
+
     // Support ID/Password login
     if (typeof authData === 'object' && authData !== null) {
       const { loginId, loginPassword } = authData;
@@ -208,7 +210,7 @@ io.on('connection', (socket) => {
       socket.emit('auth-error', 'Invalid Auctioneer ID or Password.');
       return;
     }
-    
+
     // Support legacy code-only login
     if (authData === db.auctioneerCode) {
       socketAuth.set(socket.id, { role: 'auctioneer' });

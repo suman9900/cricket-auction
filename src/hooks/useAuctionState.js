@@ -293,8 +293,9 @@ export function useAuctionState() {
   const loginAsAuctioneer = (code) => {
     if (mode === 'local') {
       const currentDb = getLocalDb() || db;
-      if (!currentDb.setupComplete) {
-        setAuthError('No tournament created yet.');
+      // Allow auctioneer to login even before tournament is set up
+      if (!currentDb.auctioneerRegistered) {
+        setAuthError('No auctioneer registered yet. Please register first.');
         return;
       }
       if (typeof code === 'object' && code !== null) {
