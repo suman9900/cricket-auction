@@ -80,7 +80,16 @@ export function useAuctionState() {
   const [authError, setAuthError] = useState(null);
   const [registeredPlayerId, setRegisteredPlayerId] = useState(null);
 
-  const [authState, setAuthState] = useState({
+  // Initialize authState from localStorage if available to preserve login across sessions
+  const savedAuthState = (() => {
+    try {
+      const stored = localStorage.getItem('auth_state');
+      return stored ? JSON.parse(stored) : null;
+    } catch (e) {
+      return null;
+    }
+  })();
+  const [authState, setAuthState] = useState(savedAuthState || {
     authenticated: false,
     role: null,
     teamId: null,
@@ -89,6 +98,15 @@ export function useAuctionState() {
     auctioneerId: null,
     auctioneerPassword: null
   });
+
+  // Persist authState changes to localStorage so it survives page reloads or inactivity
+  useEffect(() => {
+    try {
+      localStorage.setItem('auth_state', JSON.stringify(authState));
+    } catch (e) {
+      // ignore storage errors
+    }
+  }, [authState]);
 
   const socketRef = useRef(null);
   const timerRef = useRef(null);
@@ -370,9 +388,13 @@ export function useAuctionState() {
 
   const logout = () => {
     if (mode === 'local') {
+      // Clear persisted auth state on logout
+      localStorage.removeItem('auth_state');
       setAuthState({ authenticated: false, role: null, teamId: null, teamName: null, auctioneerCode: null, auctioneerId: null, auctioneerPassword: null });
     } else {
       emit('logout');
+      // Clear persisted auth state on logout
+      localStorage.removeItem('auth_state');
       setAuthState({ authenticated: false, role: null, teamId: null, teamName: null, auctioneerCode: null, auctioneerId: null, auctioneerPassword: null });
     }
   };
