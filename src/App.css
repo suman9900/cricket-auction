@@ -497,8 +497,13 @@
 
 /* Pool cards */
 .player-grid-card {
-  padding: 16px;
-  min-height: 220px;
+  padding: 12px;
+  min-height: 180px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.player-grid-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(255, 215, 0, 0.2);
 }
 
 .medium-avatar {

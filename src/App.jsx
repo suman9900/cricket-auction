@@ -433,7 +433,7 @@ function App() {
   // Auto-navigate to auctioneer dashboard on successful login
   const handleAuctioneerLogin = (e) => {
     e.preventDefault();
-    loginAsAuctioneer({ loginId: aucIdInput, loginPassword: aucPasswordInput });
+    loginAsAuctioneer({ loginId: aucIdInput.trim(), loginPassword: aucPasswordInput.trim() });
     // Navigation will happen via useEffect below when authState updates
   };
 
@@ -936,7 +936,9 @@ function App() {
                     }
                     registerAuctioneer({
                       ...registerForm,
-                      tournamentName: setupForm.tournamentName
+                      auctioneerId: registerForm.auctioneerId.trim(),
+                      auctioneerPassword: registerForm.auctioneerPassword.trim(),
+                      tournamentName: setupForm.tournamentName.trim()
                     });
                     setActivePortal('auc_login');
                   }}
@@ -1394,7 +1396,7 @@ function App() {
                           DRAFT ROSTER POOL <span className="badge-count">{db.players.filter(p => p.status !== 'registered' && p.status !== 'pending').length}</span>
                         </span>
 
-                        <div className="roster-pool-list flex-column gap-12 margin-t-16" style={{ maxHeight: 'calc(100vh - 300px)', overflowY: 'auto' }}>
+                        <div className="roster-pool-list flex-column gap-12 margin-t-16" style={{ maxHeight: '600px', overflowY: 'auto' }}>
                           {db.players.filter(p => p.status !== 'registered' && p.status !== 'pending').length === 0 ? (
                             <p className="empty-info-msg">No players registered or approved yet.</p>
                           ) : (
@@ -1894,7 +1896,7 @@ function App() {
 
                   <form onSubmit={(e) => { 
                     e.preventDefault(); 
-                    loginAsTeam(teamIdInput, teamPasswordInput); 
+                    loginAsTeam(teamIdInput.trim(), teamPasswordInput.trim()); 
                   }} className="auth-form flex-column gap-16 margin-t-20 width-full">
                     <div className="form-group text-left">
                       <label className="text-xs">Team Login ID</label>
