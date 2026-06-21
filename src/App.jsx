@@ -777,6 +777,12 @@ function App() {
                     <p className="text-secondary text-xs">Set up a new auctioneer profile and configure your tournament</p>
                     <button className="btn-premium btn-secondary btn-sm" style={{ marginTop: '12px' }}>Register →</button>
                   </div>
+                  <div className="landing-cta-card glass-panel" onClick={() => setActivePortal('live_auction_gate')} style={{ borderColor: 'rgba(255,215,0,0.3)', cursor: 'pointer' }}>
+                    <span className="cta-icon">🏟️</span>
+                    <h3 className="sporty-title text-gold">Captain Login</h3>
+                    <p className="text-secondary text-xs">Enter the live bidding arena as a captain</p>
+                    <button className="btn-premium btn-gold btn-sm" style={{ marginTop: '12px' }}>Enter Lobby →</button>
+                  </div>
                   <div className="landing-cta-card glass-panel" onClick={() => setActivePortal('player_register')} style={{ cursor: 'pointer' }}>
                     <span className="cta-icon">🏃</span>
                     <h3 className="sporty-title">Join Draft Pool</h3>

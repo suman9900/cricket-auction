@@ -1,79 +1,19 @@
 {
-  "setupComplete": true,
-  "auctioneerRegistered": true,
-  "auctioneerName": "Ruman",
-  "auctioneerCode": "AUC-PJYSZD",
-  "auctioneerId": "123",
-  "auctioneerPassword": "123",
-  "tournament": {
-    "name": "HMPL",
-    "auctioneer": "Ruman",
-    "gender": "Men",
-    "startingBudget": 10000,
-    "minBidIncrement": 500,
-    "timerSeconds": 30
-  },
-  "players": [
-    {
-      "id": "play-qx3emslsf",
-      "name": "Suman Sahoo",
-      "avatarUrl": "",
-      "avatarPreset": "av-2",
-      "role": "Batsman",
-      "battingStyle": "Right Hand",
-      "bowlingStyle": "Medium Pace",
-      "basePrice": 500,
-      "status": "sold",
-      "soldPrice": 500,
-      "soldToTeamId": "team-jrzbcs8b5",
-      "isPlaying11": true
-    }
-  ],
-  "teams": [
-    {
-      "id": "team-jrzbcs8b5",
-      "name": "bablu warrriors",
-      "captain": "BAblu",
-      "budget": 9500,
-      "players": [
-        "play-qx3emslsf"
-      ],
-      "loginId": "T-LSUN",
-      "loginPassword": "5AP6H2"
-    },
-    {
-      "id": "team-4tggoufky",
-      "name": "Ruman Legends",
-      "captain": "Ruman",
-      "budget": 10000,
-      "players": [],
-      "loginId": "T-EW4Y",
-      "loginPassword": "ZXZ9KR"
-    },
-    {
-      "id": "team-zcgr9klut",
-      "name": "Deepak Chettris",
-      "captain": "Deepak",
-      "budget": 10000,
-      "players": [],
-      "loginId": "T-ENVH",
-      "loginPassword": "9NNEGH"
-    }
-  ],
+  "setupComplete": false,
+  "auctioneerRegistered": false,
+  "auctioneerName": null,
+  "auctioneerCode": null,
+  "auctioneerId": null,
+  "auctioneerPassword": null,
+  "tournament": null,
+  "players": [],
+  "teams": [],
   "auctionState": {
-    "activePlayerId": "play-qx3emslsf",
-    "currentBid": 500,
-    "highestBidderId": "team-jrzbcs8b5",
-    "status": "sold",
+    "activePlayerId": null,
+    "currentBid": 0,
+    "highestBidderId": null,
+    "status": "idle",
     "timeLeft": 0,
-    "bidHistory": [
-      {
-        "teamId": "team-jrzbcs8b5",
-        "teamName": "bablu warrriors",
-        "captain": "BAblu",
-        "bidAmount": 500,
-        "timestamp": 1781516991340
-      }
-    ]
+    "bidHistory": []
   }
 }
