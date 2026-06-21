@@ -1740,6 +1740,66 @@ function App() {
                                     </div>
                                   </div>
 
+                                  {/* Remaining Purse Preview — shown when bidding is active & captain can/could bid */}
+                                  {isBiddingActive && representingTeam && !alreadyHoldingBid && (
+                                    <div style={{
+                                      background: 'rgba(0,0,0,0.35)',
+                                      border: '1px solid rgba(255,215,0,0.2)',
+                                      borderRadius: '14px',
+                                      padding: '12px 16px',
+                                      display: 'flex',
+                                      flexDirection: 'column',
+                                      gap: '8px'
+                                    }}>
+                                      <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'rgba(255,255,255,0.4)', fontWeight: 'bold' }}>
+                                        💰 Purse After This Bid
+                                      </span>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                          <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.45)' }}>Current Purse</span>
+                                          <span style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--green-accent)', fontFamily: 'monospace' }}>
+                                            {formatCurrency(representingTeam.budget)}
+                                          </span>
+                                        </div>
+                                        <span style={{ fontSize: '1.3rem', color: 'rgba(255,255,255,0.2)' }}>→</span>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                          <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.45)' }}>After Bid</span>
+                                          <span style={{
+                                            fontSize: '1rem',
+                                            fontWeight: 'bold',
+                                            fontFamily: 'monospace',
+                                            color: (representingTeam.budget - nextBidAmount) < 0
+                                              ? '#ff5252'
+                                              : (representingTeam.budget - nextBidAmount) < nextBidAmount
+                                                ? '#ffd700'
+                                                : 'var(--green-accent)'
+                                          }}>
+                                            {(representingTeam.budget - nextBidAmount) >= 0
+                                              ? formatCurrency(representingTeam.budget - nextBidAmount)
+                                              : `–${formatCurrency(nextBidAmount - representingTeam.budget)}`}
+                                          </span>
+                                        </div>
+                                      </div>
+                                      {/* Visual budget depletion bar */}
+                                      <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '6px', height: '6px', overflow: 'hidden', marginTop: '2px' }}>
+                                        <div style={{
+                                          height: '100%',
+                                          borderRadius: '6px',
+                                          width: `${Math.max(0, Math.min(100, ((representingTeam.budget - nextBidAmount) / (db.tournament?.startingBudget || representingTeam.budget)) * 100))}%`,
+                                          background: (representingTeam.budget - nextBidAmount) < nextBidAmount
+                                            ? 'linear-gradient(90deg, #ffd700, #ff9800)'
+                                            : 'linear-gradient(90deg, #00e676, #00bcd4)',
+                                          transition: 'width 0.4s ease'
+                                        }} />
+                                      </div>
+                                      {(representingTeam.budget - nextBidAmount) < nextBidAmount && (representingTeam.budget - nextBidAmount) >= 0 && (
+                                        <span style={{ fontSize: '0.62rem', color: '#ffd700', textAlign: 'center', marginTop: '2px' }}>
+                                          ⚠️ Low purse warning — bid wisely!
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+
                                   {/* Bid Submit hammer CTA */}
                                   <div className="flex-column gap-8">
                                     <button 

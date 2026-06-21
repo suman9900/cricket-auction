@@ -1,19 +1,649 @@
 {
-  "setupComplete": false,
-  "auctioneerRegistered": false,
-  "auctioneerName": null,
-  "auctioneerCode": null,
-  "auctioneerId": null,
-  "auctioneerPassword": null,
-  "tournament": null,
-  "players": [],
-  "teams": [],
+  "setupComplete": true,
+  "auctioneerRegistered": true,
+  "auctioneerName": "suman",
+  "auctioneerCode": "AUC-VTM9Z9",
+  "auctioneerId": "123123",
+  "auctioneerPassword": "123123",
+  "tournament": {
+    "name": "mkl",
+    "auctioneer": "suman",
+    "gender": "Men",
+    "startingBudget": 80000000,
+    "minBidIncrement": 1000000,
+    "timerSeconds": 30
+  },
+  "players": [
+    {
+      "id": "play-wrcgf31wi",
+      "name": "wefkewf",
+      "avatarUrl": "",
+      "avatarPreset": "av-2",
+      "role": "Batsman",
+      "battingStyle": "Right Hand",
+      "bowlingStyle": "None",
+      "basePrice": 123289,
+      "status": "sold",
+      "soldPrice": 79123289,
+      "soldToTeamId": "team-28lgk1qyd"
+    },
+    {
+      "id": "play-jpip0appx",
+      "name": "wefkewf",
+      "avatarUrl": "",
+      "avatarPreset": "av-6",
+      "role": "Batsman",
+      "battingStyle": "Right Hand",
+      "bowlingStyle": "None",
+      "basePrice": 122223,
+      "status": "approved",
+      "soldPrice": 0,
+      "soldToTeamId": null
+    },
+    {
+      "id": "play-zeecjrnkz",
+      "name": "wefkewf",
+      "avatarUrl": "",
+      "avatarPreset": "av-4",
+      "role": "Batsman",
+      "battingStyle": "Right Hand",
+      "bowlingStyle": "None",
+      "basePrice": 123312,
+      "status": "approved",
+      "soldPrice": 0,
+      "soldToTeamId": null
+    }
+  ],
+  "teams": [
+    {
+      "id": "team-agy9m216b",
+      "name": "mio",
+      "captain": "ki",
+      "budget": 80000000,
+      "players": [],
+      "loginId": "T-4NXH",
+      "loginPassword": "E97RW5"
+    },
+    {
+      "id": "team-28lgk1qyd",
+      "name": "cio",
+      "captain": "mk",
+      "budget": 876711,
+      "players": [
+        "play-wrcgf31wi"
+      ],
+      "loginId": "T-WN6V",
+      "loginPassword": "FVAVQB"
+    }
+  ],
   "auctionState": {
-    "activePlayerId": null,
-    "currentBid": 0,
-    "highestBidderId": null,
-    "status": "idle",
+    "activePlayerId": "play-wrcgf31wi",
+    "currentBid": 79123289,
+    "highestBidderId": "team-28lgk1qyd",
+    "status": "sold",
     "timeLeft": 0,
-    "bidHistory": []
-  }
+    "bidHistory": [
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 79123289,
+        "timestamp": 1782020378541
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 78123289,
+        "timestamp": 1782020375394
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 77123289,
+        "timestamp": 1782020373507
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 76123289,
+        "timestamp": 1782020371089
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 75123289,
+        "timestamp": 1782020363055
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 74123289,
+        "timestamp": 1782020359597
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 73123289,
+        "timestamp": 1782020343674
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 72123289,
+        "timestamp": 1782020342024
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 71123289,
+        "timestamp": 1782020340284
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 70123289,
+        "timestamp": 1782020338632
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 69123289,
+        "timestamp": 1782020337003
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 68123289,
+        "timestamp": 1782020335506
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 67123289,
+        "timestamp": 1782020333240
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 66123289,
+        "timestamp": 1782020331936
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 65123289,
+        "timestamp": 1782020330447
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 64123289,
+        "timestamp": 1782020329066
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 63123289,
+        "timestamp": 1782020327624
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 62123289,
+        "timestamp": 1782020326224
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 61123289,
+        "timestamp": 1782020324717
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 60123289,
+        "timestamp": 1782020323206
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 59123289,
+        "timestamp": 1782020321664
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 58123289,
+        "timestamp": 1782020320090
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 57123289,
+        "timestamp": 1782020318470
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 56123289,
+        "timestamp": 1782020316885
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 55123289,
+        "timestamp": 1782020315335
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 54123289,
+        "timestamp": 1782020313792
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 53123289,
+        "timestamp": 1782020311401
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 52123289,
+        "timestamp": 1782020308069
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 51123289,
+        "timestamp": 1782020305870
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 50123289,
+        "timestamp": 1782020304478
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 49123289,
+        "timestamp": 1782020302711
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 48123289,
+        "timestamp": 1782020301321
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 47123289,
+        "timestamp": 1782020299362
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 46123289,
+        "timestamp": 1782020297458
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 45123289,
+        "timestamp": 1782020295755
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 44123289,
+        "timestamp": 1782020293829
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 43123289,
+        "timestamp": 1782020292022
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 42123289,
+        "timestamp": 1782020290391
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 41123289,
+        "timestamp": 1782020288969
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 40123289,
+        "timestamp": 1782020287469
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 39123289,
+        "timestamp": 1782020285888
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 38123289,
+        "timestamp": 1782020283830
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 37123289,
+        "timestamp": 1782020282413
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 36123289,
+        "timestamp": 1782020280765
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 35123289,
+        "timestamp": 1782020279231
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 34123289,
+        "timestamp": 1782020277757
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 33123289,
+        "timestamp": 1782020276265
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 32123289,
+        "timestamp": 1782020274699
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 31123289,
+        "timestamp": 1782020273174
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 30123289,
+        "timestamp": 1782020271598
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 29123289,
+        "timestamp": 1782020269365
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 28123289,
+        "timestamp": 1782020266501
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 27123289,
+        "timestamp": 1782020258789
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 26123289,
+        "timestamp": 1782020255633
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 25123289,
+        "timestamp": 1782020254026
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 24123289,
+        "timestamp": 1782020252050
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 23123289,
+        "timestamp": 1782020250367
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 22123289,
+        "timestamp": 1782020248561
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 21123289,
+        "timestamp": 1782020246862
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 20123289,
+        "timestamp": 1782020244951
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 19123289,
+        "timestamp": 1782020242535
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 18123289,
+        "timestamp": 1782020240739
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 17123289,
+        "timestamp": 1782020238825
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 16123289,
+        "timestamp": 1782020236719
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 15123289,
+        "timestamp": 1782020233813
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 14123289,
+        "timestamp": 1782020231748
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 13123289,
+        "timestamp": 1782020229657
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 12123289,
+        "timestamp": 1782020226451
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 11123289,
+        "timestamp": 1782020223814
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 10123289,
+        "timestamp": 1782020221836
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 9123289,
+        "timestamp": 1782020219598
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 8123289,
+        "timestamp": 1782020217533
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 7123289,
+        "timestamp": 1782020215635
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 6123289,
+        "timestamp": 1782020213389
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 5123289,
+        "timestamp": 1782020211035
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 4123289,
+        "timestamp": 1782020203569
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 3123289,
+        "timestamp": 1782020194533
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 2123289,
+        "timestamp": 1782020182638
+      },
+      {
+        "teamId": "team-28lgk1qyd",
+        "teamName": "cio",
+        "captain": "mk",
+        "bidAmount": 1123289,
+        "timestamp": 1782020169358
+      },
+      {
+        "teamId": "team-agy9m216b",
+        "teamName": "mio",
+        "captain": "ki",
+        "bidAmount": 123289,
+        "timestamp": 1782020157981
+      }
+    ]
+  },
+  "tournamentName": "mkl"
 }
