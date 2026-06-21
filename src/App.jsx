@@ -233,6 +233,106 @@ function RosterShowcasePitch({
   );
 }
 
+function MVPShowcase({ mvpPlayer, mvpTeam, renderAvatarSVG, formatCurrency }) {
+  if (!mvpPlayer) return null;
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(255,140,0,0.05) 100%)',
+      border: '2px solid rgba(255,215,0,0.4)',
+      borderRadius: '24px',
+      padding: '28px 24px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '16px',
+      boxShadow: '0 0 60px rgba(255,215,0,0.15), 0 8px 40px rgba(0,0,0,0.4)',
+      position: 'relative',
+      overflow: 'hidden',
+      width: '100%',
+      marginBottom: '10px'
+    }}>
+      {/* Glowing radial background */}
+      <div style={{
+        position: 'absolute', top: '50%', left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: '400px', height: '400px',
+        background: 'radial-gradient(circle, rgba(255,215,0,0.07) 0%, transparent 70%)',
+        pointerEvents: 'none'
+      }} />
+
+      {/* Header Badge */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', zIndex: 1 }}>
+        <span style={{ fontSize: '1.6rem' }}>🏆</span>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,215,0,0.6)', textTransform: 'uppercase', fontWeight: 'bold' }}>AUCTION COMPLETE</div>
+          <div style={{ fontSize: '1.3rem', fontWeight: 'bold', color: '#ffd700', letterSpacing: '1.5px', textShadow: '0 0 20px rgba(255,215,0,0.6)', fontFamily: 'sans-serif' }}>MOST VALUABLE PLAYER</div>
+        </div>
+        <span style={{ fontSize: '1.6rem' }}>🏆</span>
+      </div>
+
+      {/* Player card */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '24px',
+        background: 'rgba(0,0,0,0.35)',
+        borderRadius: '18px',
+        padding: '20px 28px',
+        border: '1px solid rgba(255,215,0,0.25)',
+        zIndex: 1,
+        flexWrap: 'wrap',
+        justifyContent: 'center'
+      }}>
+        {/* Avatar with glow ring */}
+        <div style={{
+          width: '90px', height: '90px',
+          borderRadius: '50%',
+          background: 'rgba(255,215,0,0.05)',
+          border: '3px solid rgba(255,215,0,0.5)',
+          boxShadow: '0 0 30px rgba(255,215,0,0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          overflow: 'hidden', flexShrink: 0
+        }}>
+          {renderAvatarSVG(mvpPlayer.avatarPreset, mvpPlayer.avatarUrl)}
+        </div>
+
+        {/* Player info */}
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '1.6rem', fontWeight: 'bold', color: '#fff', letterSpacing: '0.5px', lineHeight: 1.1 }}>{mvpPlayer.name}</div>
+          <span style={{
+            display: 'inline-block', marginTop: '6px',
+            fontSize: '0.7rem', padding: '3px 10px',
+            borderRadius: '6px', background: 'rgba(255,255,255,0.07)',
+            color: 'rgba(255,255,255,0.7)', fontWeight: 'bold', letterSpacing: '1px', textTransform: 'uppercase'
+          }}>{mvpPlayer.role}</span>
+          <div style={{ marginTop: '10px', display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)' }}>🏏 {mvpPlayer.battingStyle}</div>
+            {mvpPlayer.bowlingStyle && mvpPlayer.bowlingStyle !== 'None' && (
+              <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)' }}>🎯 {mvpPlayer.bowlingStyle}</div>
+            )}
+          </div>
+        </div>
+
+        {/* Sold price */}
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Hammer Price</div>
+          <div style={{
+            fontSize: '2rem', fontWeight: 'bold',
+            color: '#ffd700',
+            textShadow: '0 0 20px rgba(255,215,0,0.7)',
+            fontFamily: 'monospace'
+          }}>{formatCurrency(mvpPlayer.soldPrice)}</div>
+          {mvpTeam && (
+            <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', marginTop: '4px' }}>
+              Acquired by <strong style={{ color: '#fff' }}>{mvpTeam.name}</strong>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const {
     db,
@@ -792,6 +892,21 @@ function App() {
                 </div>
               )}
             </div>
+
+            {/* MVP Banner on Landing Page — shown when auction is complete */}
+            {(() => {
+              const soldPlayers = db.players.filter(p => p.status === 'sold');
+              const pendingPlayers = db.players.filter(p => p.status === 'approved' || p.status === 'active');
+              const auctionDone = soldPlayers.length > 0 && pendingPlayers.length === 0;
+              if (!auctionDone) return null;
+              const mvp = soldPlayers.reduce((best, p) => (!best || p.soldPrice > best.soldPrice) ? p : best, null);
+              const mvpTeam = mvp ? db.teams.find(t => t.id === mvp.soldToTeamId) : null;
+              return (
+                <div style={{ width: '100%', marginTop: '32px' }}>
+                  <MVPShowcase mvpPlayer={mvp} mvpTeam={mvpTeam} renderAvatarSVG={renderAvatarSVG} formatCurrency={formatCurrency} />
+                </div>
+              );
+            })()}
 
             {/* About Section */}
             <div className="about-section glass-panel margin-t-40" style={{ padding: '40px', borderRadius: '20px', width: '100%' }}>
@@ -2216,6 +2331,17 @@ function App() {
                   <h1 className="sporty-title glow-text-gold">🏆 FRANCHISE SQUADS & PLAYING XI</h1>
                   <p className="hero-subtitle">Select any team below to visualize their live purchased squad and active playing XI layout.</p>
                 </div>
+
+                {/* MVP Banner — shown when all auction-eligible players have been processed */}
+                {(() => {
+                  const soldPlayers = db.players.filter(p => p.status === 'sold');
+                  const pendingPlayers = db.players.filter(p => p.status === 'approved' || p.status === 'active');
+                  const auctionDone = soldPlayers.length > 0 && pendingPlayers.length === 0;
+                  if (!auctionDone) return null;
+                  const mvp = soldPlayers.reduce((best, p) => (!best || p.soldPrice > best.soldPrice) ? p : best, null);
+                  const mvpTeam = mvp ? db.teams.find(t => t.id === mvp.soldToTeamId) : null;
+                  return <MVPShowcase mvpPlayer={mvp} mvpTeam={mvpTeam} renderAvatarSVG={renderAvatarSVG} formatCurrency={formatCurrency} />;
+                })()}
                 
                 <RosterShowcasePitch
                   db={db}
